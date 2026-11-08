@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: review-draft
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: DAILY_LIMIT
+        value: "300"
+      - key: RATE_LIMIT_PER_HOUR
+        value: "10"

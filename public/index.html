@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>후기 초안 도우미</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <header>
+    <h1>후기 초안 도우미</h1>
+    <p class="sub">사진과 메모로 네이버 블로그 후기 초안을 만들어요. 사진은 글을 만든 뒤 서버에 남지 않아요.</p>
+  </header>
+
+  <form id="form" novalidate>
+    <section class="card">
+      <h2>사진 <span class="req">필수</span> <span class="hint" id="photoCount">0/15</span></h2>
+      <label class="drop" id="drop">
+        <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple hidden>
+        <span>＋ 사진 추가 (1~15장)</span>
+      </label>
+      <p class="hint">≡ 손잡이를 끌어 순서를 바꿀 수 있어요. 이 순서대로 [사진 1], [사진 2]가 붙어요.</p>
+      <ol id="photoList" class="photos"></ol>
+    </section>
+
+    <section class="card">
+      <h2>기본 정보 <span class="req">필수</span></h2>
+      <label>업체명 또는 제품명
+        <input id="name" maxlength="100" placeholder="예: 을지로 ○○국밥">
+      </label>
+      <label>키워드 (1~5개, 쉼표로 구분)
+        <input id="keywords" placeholder="예: 을지로 국밥, 점심 맛집">
+      </label>
+      <div class="chips" id="kwChips"></div>
+      <label>실제로 낸 금액
+        <input id="price" maxlength="50" placeholder="예: 2인 24,000원">
+      </label>
+      <div class="multi" data-key="goods">
+        <span class="lbl">좋았던 점 (1개 이상)</span>
+        <div class="rows"></div>
+        <button type="button" class="add">＋ 추가</button>
+      </div>
+      <div class="multi" data-key="bads">
+        <span class="lbl">아쉬웠던 점 (1개 이상)</span>
+        <div class="rows"></div>
+        <button type="button" class="add">＋ 추가</button>
+      </div>
+    </section>
+
+    <details class="card">
+      <summary><h2>추가 정보 <span class="opt">선택</span></h2></summary>
+      <label>방문일 또는 구매일 <input id="date" type="date"></label>
+      <label>위치 <input id="location" maxlength="100" placeholder="예: 을지로3가역 4번 출구 근처"></label>
+      <label>주문 메뉴 또는 구매 옵션 <input id="menu" maxlength="200"></label>
+      <label>대기시간 <input id="wait" maxlength="50" placeholder="예: 20분"></label>
+      <label>같이 간 사람 <input id="companion" maxlength="50" placeholder="예: 회사 동료 1명"></label>
+      <label>재방문 또는 재구매 의사 <input id="revisit" maxlength="100" placeholder="예: 다른 메뉴 먹으러 한 번 더 갈 생각"></label>
+    </details>
+
+    <section class="card">
+      <h2>글 설정</h2>
+      <fieldset class="seg"><legend>말투</legend>
+        <label><input type="radio" name="tone" value="comfy" checked><span>편안한</span></label>
+        <label><input type="radio" name="tone" value="plain"><span>담백한</span></label>
+        <label><input type="radio" name="tone" value="info"><span>정보 위주</span></label>
+      </fieldset>
+      <fieldset class="seg"><legend>글 길이</legend>
+        <label><input type="radio" name="length" value="short"><span>짧게</span></label>
+        <label><input type="radio" name="length" value="normal" checked><span>보통</span></label>
+        <label><input type="radio" name="length" value="long"><span>길게</span></label>
+      </fieldset>
+      <label>평소 내가 쓴 글 샘플 <span class="opt">선택</span>
+        <textarea id="sample" rows="4" maxlength="3000" placeholder="예전에 쓴 글을 붙여 넣으면 문장 길이와 어미를 참고해요. 내용은 가져오지 않아요."></textarea>
+      </label>
+    </section>
+
+    <section class="card confirm">
+      <label class="check">
+        <input type="checkbox" id="confirmed">
+        <span>내가 직접 돈을 내고 이용했으며, 입력 내용은 사실입니다</span>
+      </label>
+      <p class="hint">사진과 입력 내용은 글을 만들기 위해 AI 서비스(Anthropic)로 전송되고, 이 사이트 서버에는 저장되지 않아요. 다른 사람의 얼굴이나 개인정보가 담긴 사진은 가급적 빼 주세요.</p>
+      <p class="hint">할인·무료 제공·원고료 등 대가를 받았다면 이 도구로 쓰지 마세요. 대가를 받은 글은 그 사실을 표시해야 해요.</p>
+      <p id="missing" class="missing" aria-live="polite"></p>
+      <button type="submit" id="generate" class="primary" disabled>후기 초안 만들기</button>
+    </section>
+  </form>
+
+  <section id="result" class="result" hidden>
+    <div class="card">
+      <h2>제목 후보</h2>
+      <div id="titles" class="titles"></div>
+    </div>
+
+    <div class="card">
+      <div class="row-between">
+        <h2>본문</h2>
+        <span class="hint" id="bodyCount"></span>
+      </div>
+      <p class="hint">바로 고칠 수 있어요. 자기 말로 한두 문장은 바꿔 주세요.</p>
+      <textarea id="body" rows="18"></textarea>
+    </div>
+
+    <div class="card">
+      <h2>해시태그</h2>
+      <textarea id="hashtags" rows="3"></textarea>
+    </div>
+
+    <div class="card warn" id="warnBox" hidden>
+      <h2>자동 점검 결과</h2>
+      <ul id="warnings"></ul>
+    </div>
+
+    <div class="card">
+      <h2>사실 확인 목록</h2>
+      <p class="hint">올리기 전에 하나씩 확인해 주세요.</p>
+      <ul id="checks" class="checks"></ul>
+    </div>
+
+    <div class="sticky">
+      <p class="notice">사진은 함께 복사되지 않아요. [사진 번호] 위치에 직접 넣어주세요.</p>
+      <div class="copy-grid">
+        <button type="button" data-copy="all" class="primary">전체 복사</button>
+        <button type="button" data-copy="title">제목 복사</button>
+        <button type="button" data-copy="body">본문 복사</button>
+        <button type="button" data-copy="tags">해시태그 복사</button>
+      </div>
+    </div>
+    <div class="redo">
+        <button type="button" id="rewrite">다시 쓰기</button>
+        <button type="button" id="shorter">더 짧게</button>
+        <button type="button" id="backToForm" class="ghost">입력 수정</button>
+    </div>
+  </section>
+</main>
+
+<div id="loading" class="loading" hidden><div class="spinner"></div><p id="loadingText">글을 쓰는 중이에요… (30초~1분)</p></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="/vendor/sortable.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
